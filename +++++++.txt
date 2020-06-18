@@ -1,0 +1,1 @@
+SQLSTATE[08S01]: Communication link failure: 1053 Server shutdown in progress   mysql:host=172.18.0.2;dbname=db;",db,db
