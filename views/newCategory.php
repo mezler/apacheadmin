@@ -27,9 +27,96 @@ require 'conn.php';
     <script src="//code.jquery.com/jquery.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 
+    <script src=https://cdn.staticfile.org/Sortable/1.10.2/Sortable.min.js></script>
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/nestable2@1.6.0/jquery.nestable.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nestable2@1.6.0/jquery.nestable.min.css"> -->
+
     <script>
 
       $('document').ready(function(){
+
+        $("a[href$='#managecat']").click(function(){
+              let i = 0
+              $('.sortdiv').each(function(){
+                          
+                          if ( i != 0 ) {
+      
+                              actual = parseInt( $(this).css("margin-left").replace("px",""), 10)
+                              prev = parseInt( $(this).prev().css("margin-left").replace("px",""), 10)
+      
+                              if ( prev < actual) {                      
+                              $(this).css("margin-left", prev + 15 + "px")
+                            }
+                          }
+                          i++
+            })
+
+        })
+
+
+        $('.reorder.glyphicon-circle-arrow-right').click(function(){
+
+
+              alert ('bent')
+
+
+
+
+        })
+
+          
+
+  
+        let leftWall = 0
+       
+        
+          let depth = 0
+
+          new Sortable(draganddrop, {
+
+              animation: 150,
+              ghostClass: 'blue-background-class',
+          onMove: function ( evt, originalEvent) {
+
+              // depth = $(evt.related).css("margin-left")
+
+              // $(evt.dragged).css( "margin-left", depth )
+
+           },
+
+          onStart: function (evt) {
+            
+            },
+            
+          onEnd: function (evt) {
+
+                let i = 0
+                $('.sortdiv').each(function(){
+                      
+                   if ( i != 0 ) {
+
+                       actual = parseInt( $(this).css("margin-left").replace("px",""), 10)
+                       prev = parseInt( $(this).prev().css("margin-left").replace("px",""), 10)
+
+                       if ( prev < actual) {                      
+                        $(this).css("margin-left", prev + 15 + "px")
+                      }
+                   }
+                   i++
+                })  
+
+                // var itemEl = evt.item;  // dragged HTMLElement
+                // evt.to;    // target list
+                // evt.from;  // previous list
+                // evt.oldIndex;  // element's old index within old parent
+                // evt.newIndex;  // element's new index within new parent
+                // evt.oldDraggableIndex; // element's old index within old parent, only counting draggable elements
+                // evt.newDraggableIndex; // element's new index within new parent, only counting draggable elements
+                // evt.clone // the clone element
+                // evt.pullMode;  // when item is in another sortable: `"clone"` if cloning, `true` if moving
+              }
+          });
 
           
           $('.menu_item').click(function(){
@@ -88,6 +175,8 @@ require 'conn.php';
 
           $('#torol').click(function(){
 
+            $('.alert-dismissible').remove();
+
             if ( $('#sel2').find(":selected").text() == "-- válasszon kategóriát --") {
 
               $('#torloform').append(             
@@ -100,10 +189,11 @@ require 'conn.php';
 
             }
 
+            if ( $('#sel2').find(":selected").text() != "-- válasszon kategóriát --") {
 
+              $('#deleteform').submit();
 
-
-
+            }
 
 
           })
@@ -241,8 +331,40 @@ require 'conn.php';
             border-bottom-color: #ddd;
             border-top-color: #ddd;
             border-right-color: #ddd;
+            border-left-color: #ddd;
 
             }
+
+            .glyphicon-move {
+
+                font-size: 12px;
+
+            }
+
+            .reorder { 
+
+              float:right;
+              margin-right: 5px;
+              color: #438eb9;
+              margin-top: 2px;
+              cursor: pointer;
+              
+              }
+
+              .sortdiv {
+
+                padding-top: 5px;
+                padding-bottom: 5px;
+                padding-left:4px;
+                background-color: #8f939536;
+              }
+
+              .glyphicon-remove {
+
+                color: #c21313bf;
+
+              }
+
 
            
 
@@ -772,16 +894,16 @@ require 'conn.php';
 
                     <!-- Nav tabs -->
                     <ul class="nav nav-tabs" role="tablist">
-                      <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Új kategória</a></li>
-                      <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Kategória törlés</a></li>
-                      <li role="presentation"><a href="#messages" aria-controls="messages" role="tab" data-toggle="tab">Kategória hierarchia beállítás</a></li>
+                      <li role="presentation" class="active"><a href="#newcat" aria-controls="newcat" role="tab" data-toggle="tab">Új kategória</a></li>
+                      <li role="presentation"><a href="#deletecat" aria-controls="deletecat" role="tab" data-toggle="tab">Kategória törlés</a></li>
+                      <li role="presentation"><a href="#managecat" aria-controls="managecat" role="tab" data-toggle="tab">Kategória hierarchia beállítás</a></li>
                       <li role="presentation"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a></li>
                     </ul>
 
                     <!-- Tab panes -->
                     <div class="tab-content">
 
-                      <div role="tabpanel" class="tab-pane active" id="home">
+                      <div role="tabpanel" class="tab-pane active" id="newcat">
 
                           <div style="border-left: 1px solid #d9d7d7;border-right: 1px solid #d9d7d7; border-bottom: 1px solid #d9d7d7;">
                             <div class="row" style="padding-top:40px; padding-left:20px; padding-bottom: 40px" >
@@ -847,7 +969,7 @@ require 'conn.php';
 
                       </div>
                     
-                      <div role="tabpanel" class="tab-pane" id="profile">
+                     <div role="tabpanel" class="tab-pane" id="deletecat">
                         
                       <div style="border-left: 1px solid #d9d7d7;border-right: 1px solid #d9d7d7; border-bottom: 1px solid #d9d7d7;">
                             <div class="row" style="padding-top:40px; padding-left:20px; padding-bottom: 40px" >
@@ -855,26 +977,36 @@ require 'conn.php';
 
                                         <?php 
 
-                                              if ( isset($_SESSION["insertsuccess"]) ) {
+                                              if ( isset($_SESSION["deletesuccess"]) ) {
 
-                                                if ( $_SESSION["insertsuccess"]== "yes" ) {
+                                                if ( $_SESSION["deletesuccess"]== "yes" ) {
                                                   
                                                   echo '<div class="alert alert-success alert-dismissible show" role="alert">';
-                                                  echo '<strong>Sikeres kategória inzert!</strong>' ;
+                                                  echo '<strong>Sikeres kategória törlés!</strong>' ;
                                                   echo '<button type="button" class="close" data-dismiss="alert" aria-label="Close">';
                                                   echo '<span aria-hidden="true">&times;</span>';
                                                   echo '</button>';
                                                   echo '</div>';
+                                                  echo '<script>';
+                                                  echo "(function(){";
+                                                  echo  "$( '#deletecat' ).addClass('active');";
+                                                  echo  "$( '#newcat' ).removeClass( 'active' );";
+                                                  echo  "$( '#managecat' ).removeClass( 'active' );";
+                                                  echo "$('a[href=\\u0022#deletecat\\u0022]').parent().addClass( 'active' );";
+                                                  echo "$('a[href=\\u0022#newcat\\u0022]').parent().removeClass( 'active' );";
+                                                  echo "$('a[href=\\u0022#managecat\\u0022]').parent().removeClass( 'active' );";
+                                                  echo  "})();";
+                                                  echo '</script>';
 
                                                 }
 
-                                                unset($_SESSION['insertsuccess']) ; 
+                                                unset($_SESSION['deletesuccess']) ; 
 
                                               }                                    
                                         
                                         ?>
                               
-                                        <form method="post" action="/insertnewcategory" id="categoryform">
+                                        <form method="post" action="/deletecategory" id="deleteform">
                                           
                                             <div class="form-group">
                                               <label for="sel2">Válasszon kategóriát:</label>
@@ -905,14 +1037,163 @@ require 'conn.php';
                                 </div>
                             </div>
                           </div>
-                      
-                    
-                    
-                    
-                    
-                    
+                   
                       </div>
-                      <div role="tabpanel" class="tab-pane" id="messages">??????</div>
+
+
+                      <div role="tabpanel" class="tab-pane" id="managecat">
+
+                          <div style="border-left: 1px solid #d9d7d7;border-right: 1px solid #d9d7d7; border-bottom: 1px solid #d9d7d7;">
+                                <div class="row" style="padding-top:40px; padding-left:20px; padding-bottom: 40px" >
+                                    <div class="col-sm-5" id="torloform">   
+                                      
+                                            <?php 
+
+                                                  if ( isset($_SESSION["deletesuccess"]) ) {
+
+                                                    if ( $_SESSION["deletesuccess"]== "yes" ) {
+                                                      
+                                                      echo '<div class="alert alert-success alert-dismissible show" role="alert">';
+                                                      echo '<strong>Sikeres kategória törlés!</strong>' ;
+                                                      echo '<button type="button" class="close" data-dismiss="alert" aria-label="Close">';
+                                                      echo '<span aria-hidden="true">&times;</span>';
+                                                      echo '</button>';
+                                                      echo '</div>';
+
+                                                    }
+
+                                                    unset($_SESSION['deletesuccess']) ; 
+
+                                                  }                                    
+                                            
+                                            ?>
+
+                                            <div id="draganddrop">
+                                            <?php 
+                                                $arr = [];
+                                                $query = "SELECT name, category_id, lft, rgt FROM `nested_category` WHERE `category_id` in (SELECT `category_id` FROM nested_category WHERE 1) ORDER BY lft;";
+                                                $result = $link->query($query);
+                                                //$arr = mysqli_fetch_assoc($result);
+                                                
+                                                while ($row = mysqli_fetch_assoc($result)){
+
+                                                  
+                                                  $query2 = "SELECT node.name, (COUNT(parent.name) - 1) AS depth ";
+                                                  $query2 = $query2 . "FROM nested_category AS node, ";
+                                                  $query2 = $query2 . "nested_category AS parent ";
+                                                  $query2 = $query2 . "WHERE node.lft BETWEEN parent.lft AND parent.rgt ";
+                                                  $query2 = $query2 . "AND node.category_id = '" . $row['category_id'] . "';";
+
+                                                  //echo $query2 . "<BR />";
+
+                                                   $result2 = $link->query($query2);
+
+                                                   $row1 = mysqli_fetch_assoc($result2);
+
+                                                   //echo $row1['depth'];
+
+                                                   array_push(  $row, $row1['depth'] );
+
+                                                   array_push($arr,$row);
+
+
+
+
+                                                }
+
+                                                  
+                                                  $json = json_decode(json_encode($arr), true);
+                                                  echo (count($json));
+
+                                                  for ($x = 0; $x < count($json); $x++) {
+                                              
+                                                    echo $json[ $x ]['name']."<BR/>";
+                                                    echo $json[ $x ]['category_id']."<BR/>";
+                                                    //echo ( (int)$json[ $x ][0] * 15 )."<BR/>";
+                                                    $marg = (int)$json[ $x ][0] * 15;
+                                                    echo "marg : ", $marg;
+                     echo "<div class='sortdiv' style='margin-top:5px;cursor: move;margin-left:60px'><i class='glyphicon glyphicon-move'></i>   ". $json[ $x ]['name'] ."<span class='glyphicon glyphicon-remove reorder'></span><span class='glyphicon glyphicon-circle-arrow-right reorder'></span><span class='glyphicon glyphicon-circle-arrow-left reorder'></span></div>";
+                    //  $myFile = "testFile.txt";
+                    //  $fh = fopen($myFile, 'w') or die("can't open file");
+                    //  $stringData = "<div class='sortdiv' style='margin-top:5px;cursor: move;margin-left:" . $marg  . "px'><i class='glyphicon glyphicon-move'></i>   ". $json[ $x ]['name'] ."<span class='glyphicon glyphicon-remove reorder'></span><span class='glyphicon glyphicon-circle-arrow-right reorder'></span><span class='glyphicon glyphicon-circle-arrow-left reorder'></span></div>\n";
+                    //  file_put_contents('testFile.txt', $stringData.PHP_EOL , FILE_APPEND | LOCK_EX);
+                     //fwrite($fh, $stringData);                      
+                                                  
+                    
+                    
+                    }
+                                                  //  echo $json[11]['name']."<BR/>";
+                                                  //  echo $json[11]['category_id']."<BR/>";
+                                                  //  echo $json[11][0]."<BR/>";
+
+
+                                                  // foreach($json['items'] as $item) {
+                                                  //   echo 'name: ' . $item['name'] . '<br />';
+                                                  //   echo 'category_id: ' . $item['category_id'] . '<br />';
+                                                  //   echo 'depth: ' . $item["0"] . '<br />';
+                                                  // }
+
+                                              //  foreach($arr as $sor){
+                                              //    echo $sor['category_id'];
+                                              //  }
+
+                                              //for($i = 0; $i < count($arr); $i++) { $value = $arr[$i]; echo $value[0]; }
+                                              
+                                              
+
+
+
+                                                    
+                                              // ****************** EREDETI ********************    
+                                                    // $query = "SELECT node.name, (COUNT(parent.name) - 1) AS depth";
+                                                    // $query = $query." FROM nested_category AS node, nested_category AS parent";
+                                                    // $query = $query." WHERE node.lft BETWEEN parent.lft AND parent.rgt";
+                                                    // $query = $query." GROUP BY node.name";
+                                                    // $query = $query." ORDER BY node.lft;";
+                                                    // echo $query;
+                                                    // $result = $link->query($query);
+                                                
+                                                    // if( $result ) {
+
+                                                    //   while ($row = mysqli_fetch_assoc($result)) {
+
+                                                    //       echo "<div class='sortdiv' style='margin-top:5px;cursor: move;margin-left:" . $row['depth'] * 15  . "px'><i class='glyphicon glyphicon-move'></i>   ". $row['name'] ."<span class='glyphicon glyphicon-remove reorder'></span><span class='glyphicon glyphicon-circle-arrow-right reorder'></span><span class='glyphicon glyphicon-circle-arrow-left reorder'></span></div>";
+
+                                                    //   }
+                                                                                                     
+                                                
+                                                    // } else {
+                                                    //     echo mysqli_error($link);
+                                                    // }
+                                                // ****************** EREDETI ********************  
+
+                                        
+                                            ?>
+                                            </div>
+ 
+                                            <form method="post" action="/deletecategory" id="deleteform">
+                                              
+                                                <div class="form-group">
+                                                
+
+                                                  <div style="margin-top:20px"> 
+                                                    <button type="button" id="torol" class="btn btn-primary">Ment</button>
+                                                  </div>
+                                                </div> 
+
+                                              
+                                                  
+                                            </form>
+                                    </div>
+                                </div>
+                              </div>
+
+
+
+
+
+                          </div>
+
                       <div role="tabpanel" class="tab-pane" id="settings">***</div>
                 
 
