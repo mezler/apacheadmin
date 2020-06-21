@@ -36,44 +36,37 @@ require 'conn.php';
 
       $('document').ready(function(){
 
-        $("a[href$='#managecat']").click(function(){
-              let i = 0
-              $('.sortdiv').each(function(){
+        // $("a[href$='#managecat']").click(function(){
+        //       let i = 0
+        //       $('.sortdiv').each(function(){
                           
-                          if ( i != 0 ) {
+        //                   if ( i != 0 ) {
       
-                              actual = parseInt( $(this).css("margin-left").replace("px",""), 10)
-                              prev = parseInt( $(this).prev().css("margin-left").replace("px",""), 10)
+        //                       actual = parseInt( $(this).css("margin-left").replace("px",""), 10)
+        //                       prev = parseInt( $(this).prev().css("margin-left").replace("px",""), 10)
       
-                              if ( prev < actual) {                      
-                              $(this).css("margin-left", prev + 15 + "px")
-                            }
-                          }
-                          i++
-            })
+        //                       if ( prev < actual) {                      
+        //                       $(this).css("margin-left", prev + 15 + "px")
+        //                     }
+        //                   }
+        //                   i++
+        //     })
 
-        })
+        // })
 
 
         $('.reorder.glyphicon-circle-arrow-right').click(function(){
 
-
               alert ('bent')
-
-
-
 
         })
 
-          
 
-  
         let leftWall = 0
-       
-        
+
           let depth = 0
 
-          new Sortable(draganddrop, {
+        new Sortable(draganddrop, {
 
               animation: 150,
               ghostClass: 'blue-background-class',
@@ -198,8 +191,41 @@ require 'conn.php';
 
           })
 
+          $('.deldiv').mouseenter(function(){
 
+                      originalMrg = parseInt( $(this).css("margin-left").replace("px",""), 10)
+                      $(this).addClass("reder")
+                      recursive ( $(this), originalMrg )
+                      
+                      // if ( i != 0 ) {
+   
+                      //     actual = parseInt( $(this).css("margin-left").replace("px",""), 10)
+                      //     next = parseInt( $(this).next().css("margin-left").replace("px",""), 10)
+   
+                      //     if ( prev < actual) {                      
+                      //      $(this).css("margin-left", prev + 15 + "px")
+                      //    }
+                      // }
+                      // i++
+          })  
 
+          recursive = ( el ) => {
+
+               //actual = parseInt( el.css("margin-left").replace("px",""), 10)
+               marg = parseInt( el.next().css("margin-left").replace("px",""), 10)
+
+              if (marg > originalMrg) { 
+                  el.next().addClass("reder")
+                  recursive (el.next())
+              }
+
+          }
+
+          $('.deldiv').mouseleave(function(){
+
+              $('.deldiv').removeClass("reder")
+                     
+          })  
 
       })
 
@@ -359,9 +385,24 @@ require 'conn.php';
                 background-color: #8f939536;
               }
 
+              .deldiv {
+
+                padding-top: 5px;
+                padding-bottom: 5px;
+                padding-left:4px;
+                background-color: #8f939536;
+                }
+
               .glyphicon-remove {
 
                 color: #c21313bf;
+
+              }
+
+              .reder { 
+
+                  background-color: #f5b4b4;
+                  transition: 1s;
 
               }
 
@@ -972,8 +1013,12 @@ require 'conn.php';
                      <div role="tabpanel" class="tab-pane" id="deletecat">
                         
                       <div style="border-left: 1px solid #d9d7d7;border-right: 1px solid #d9d7d7; border-bottom: 1px solid #d9d7d7;">
-                            <div class="row" style="padding-top:40px; padding-left:20px; padding-bottom: 40px" >
-                                <div class="col-sm-4" id="torloform">   
+                      <div class="alert alert-warning" style="padding:5px;margin-top:15px;margin-left: 10px;margin-right: 60px">
+                        <strong>Fontos!</strong> Szülő kategória törlésénél a vonatkozó  alkategóriák mindegyike törlődik. A törlésre kerülő alkategóriákat halványpiros színnel kiemeljük,  </br> 
+                        amikor a "Töröl" gombra viszi az egérmutatót. A kitörölt kategóriákhoz tartozó termékek a megmaradó, közvetlen szülőkategóriába kerülnek át.
+                      </div>
+                            <div class="row" style="padding-top:20px; padding-left:20px; padding-bottom: 40px" >
+                                <div class="col-sm-5" id="torloform">   
 
                                         <?php 
 
@@ -1009,26 +1054,46 @@ require 'conn.php';
                                         <form method="post" action="/deletecategory" id="deleteform">
                                           
                                             <div class="form-group">
-                                              <label for="sel2">Válasszon kategóriát:</label>
-                                              <select class="form-control" id="sel2" name="sel2">
-                                                  <option disabled selected value>-- válasszon kategóriát --</option>
-                                                  <?php 
+                                              <label for="sel2" style="margin-bottom:20px">Válasszon kategóriát:</label>
+                                              
 
-                                                    $query = "SELECT name FROM nested_category ORDER BY name;";
-                                                    $result = $link->query($query);
+                                              <?php 
+                                              
+                                                  
 
-                                                    while ($row = mysqli_fetch_assoc($result)) {
-                                                        echo "<option>" . $row['name'] . "</option>";
-                                                    }
-                                                                                              
-                                                  ?>
-                                  
-                                                
-                                              </select>
+                                                  $arr = [];
+                                                  $query = "SELECT name, category_id, lft, rgt FROM `nested_category` WHERE `category_id` in (SELECT `category_id` FROM nested_category WHERE 1) ORDER BY lft;";
+                                                  $result = $link->query($query);
 
-                                              <div style="margin-top:20px"> 
-                                                <button type="button" id="torol" class="btn btn-primary">Töröl</button>
-                                              </div>
+                                                  while ($row = mysqli_fetch_assoc($result)){
+                                                  
+                                                    $query2 = "SELECT node.name, (COUNT(parent.name) - 1) AS depth ";
+                                                    $query2 = $query2 . "FROM nested_category AS node, ";
+                                                    $query2 = $query2 . "nested_category AS parent ";
+                                                    $query2 = $query2 . "WHERE node.lft BETWEEN parent.lft AND parent.rgt ";
+                                                    $query2 = $query2 . "AND node.category_id = '" . $row['category_id'] . "';";
+
+                                                    $result2 = $link->query($query2);
+
+                                                    $row1 = mysqli_fetch_assoc($result2);
+
+                                                    array_push(  $row, $row1['depth'] );
+
+                                                    array_push($arr,$row);
+
+                                                  }
+
+                                                  $json = json_decode(json_encode($arr), true);
+                                                  for ($x = 0; $x < count($json); $x++) {
+                                      
+                                                    $marg = (int)$json[ $x ][0] * 15;
+                                                    echo "<div class='deldiv' style='margin-top:5px;cursor: move;margin-left:" . $marg . "px'><i class='glyphicon glyphicon-move'></i>   ". $json[ $x ]['name'] ."<button type='button' class='btn btn-danger btn-xs' style='float:right; margin-right:5px'>Töröl</button></div>";
+                                                      
+                                                  }
+                                                                                  
+                                              ?>
+
+                                              
                                             </div> 
 
                                           
@@ -1090,83 +1155,20 @@ require 'conn.php';
 
                                                    $row1 = mysqli_fetch_assoc($result2);
 
-                                                   //echo $row1['depth'];
-
                                                    array_push(  $row, $row1['depth'] );
 
                                                    array_push($arr,$row);
 
-
-
-
                                                 }
 
-                                                  
-                                                  $json = json_decode(json_encode($arr), true);
-                                                  echo (count($json));
-
-                                                  for ($x = 0; $x < count($json); $x++) {
+                                                $json = json_decode(json_encode($arr), true);
                                               
-                                                    echo $json[ $x ]['name']."<BR/>";
-                                                    echo $json[ $x ]['category_id']."<BR/>";
-                                                    //echo ( (int)$json[ $x ][0] * 15 )."<BR/>";
-                                                    $marg = (int)$json[ $x ][0] * 15;
-                                                    echo "marg : ", $marg;
-                     echo "<div class='sortdiv' style='margin-top:5px;cursor: move;margin-left:60px'><i class='glyphicon glyphicon-move'></i>   ". $json[ $x ]['name'] ."<span class='glyphicon glyphicon-remove reorder'></span><span class='glyphicon glyphicon-circle-arrow-right reorder'></span><span class='glyphicon glyphicon-circle-arrow-left reorder'></span></div>";
-                    //  $myFile = "testFile.txt";
-                    //  $fh = fopen($myFile, 'w') or die("can't open file");
-                    //  $stringData = "<div class='sortdiv' style='margin-top:5px;cursor: move;margin-left:" . $marg  . "px'><i class='glyphicon glyphicon-move'></i>   ". $json[ $x ]['name'] ."<span class='glyphicon glyphicon-remove reorder'></span><span class='glyphicon glyphicon-circle-arrow-right reorder'></span><span class='glyphicon glyphicon-circle-arrow-left reorder'></span></div>\n";
-                    //  file_put_contents('testFile.txt', $stringData.PHP_EOL , FILE_APPEND | LOCK_EX);
-                     //fwrite($fh, $stringData);                      
-                                                  
-                    
-                    
-                    }
-                                                  //  echo $json[11]['name']."<BR/>";
-                                                  //  echo $json[11]['category_id']."<BR/>";
-                                                  //  echo $json[11][0]."<BR/>";
-
-
-                                                  // foreach($json['items'] as $item) {
-                                                  //   echo 'name: ' . $item['name'] . '<br />';
-                                                  //   echo 'category_id: ' . $item['category_id'] . '<br />';
-                                                  //   echo 'depth: ' . $item["0"] . '<br />';
-                                                  // }
-
-                                              //  foreach($arr as $sor){
-                                              //    echo $sor['category_id'];
-                                              //  }
-
-                                              //for($i = 0; $i < count($arr); $i++) { $value = $arr[$i]; echo $value[0]; }
-                                              
-                                              
-
-
-
+                                                for ($x = 0; $x < count($json); $x++) {
+                                            
+                                                  $marg = (int)$json[ $x ][0] * 15;
+                                                  echo "<div class='sortdiv' style='margin-top:5px;cursor: move;margin-left:" . $marg . "px'><i class='glyphicon glyphicon-move'></i>   ". $json[ $x ]['name'] ."<span class='glyphicon glyphicon-circle-arrow-right reorder'></span><span class='glyphicon glyphicon-circle-arrow-left reorder'></span></div>";
                                                     
-                                              // ****************** EREDETI ********************    
-                                                    // $query = "SELECT node.name, (COUNT(parent.name) - 1) AS depth";
-                                                    // $query = $query." FROM nested_category AS node, nested_category AS parent";
-                                                    // $query = $query." WHERE node.lft BETWEEN parent.lft AND parent.rgt";
-                                                    // $query = $query." GROUP BY node.name";
-                                                    // $query = $query." ORDER BY node.lft;";
-                                                    // echo $query;
-                                                    // $result = $link->query($query);
-                                                
-                                                    // if( $result ) {
-
-                                                    //   while ($row = mysqli_fetch_assoc($result)) {
-
-                                                    //       echo "<div class='sortdiv' style='margin-top:5px;cursor: move;margin-left:" . $row['depth'] * 15  . "px'><i class='glyphicon glyphicon-move'></i>   ". $row['name'] ."<span class='glyphicon glyphicon-remove reorder'></span><span class='glyphicon glyphicon-circle-arrow-right reorder'></span><span class='glyphicon glyphicon-circle-arrow-left reorder'></span></div>";
-
-                                                    //   }
-                                                                                                     
-                                                
-                                                    // } else {
-                                                    //     echo mysqli_error($link);
-                                                    // }
-                                                // ****************** EREDETI ********************  
-
+                                                }
                                         
                                             ?>
                                             </div>
