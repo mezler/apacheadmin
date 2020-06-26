@@ -26,8 +26,19 @@ require 'conn.php';
     <link rel="stylesheet" media="screen" href="//netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <script src="//code.jquery.com/jquery.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-
     <script src=https://cdn.staticfile.org/Sortable/1.10.2/Sortable.min.js></script>
+
+    <!-- ALERTIFY -->
+    <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
+    <!-- Default theme -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/default.min.css"/>
+    <!-- Semantic UI theme -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/semantic.min.css"/>
+    <!-- Bootstrap theme -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css"/>
 
     <!-- <script src="https://cdn.jsdelivr.net/npm/nestable2@1.6.0/jquery.nestable.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nestable2@1.6.0/jquery.nestable.min.css"> -->
@@ -55,9 +66,32 @@ require 'conn.php';
         // })
 
 
-        $('.reorder.glyphicon-circle-arrow-right').click(function(){
+        $('.reorder.forth').click(function(){
 
-              alert ('bent')
+              if (  parseInt( $(this).parent().css("margin-left").replace("px",""), 10) - parseInt( $(this).parent().prev().css("margin-left").replace("px",""), 10)  == 15 )
+              {   
+                alertify.alert("A közvetlen szűlőkategória és a módostandó kategória között nem lehet már nagyobb távolság. Ez a módosítás nem hajtható végre.", function(){
+                         //alertify.message('OK');
+                      }).set({title:"Helytelen módosítási kísérlet!"}).set({labels:{ok:'Forward', cancel: 'Backward'}});
+              }
+              else
+              {
+
+                  origmrg =   parseInt( $(this).parent().css("margin-left").replace("px",""), 10) 
+                  custmrg =  origmrg + 15
+                  $(this).parent().css("margin-left", custmrg + "px")
+
+              }
+
+              
+
+        })
+
+        $('.reorder.back').click(function(){
+
+              origmrg =   parseInt( $(this).parent().css("margin-left").replace("px",""), 10) 
+              custmrg =  origmrg - 15
+              $(this).parent().css("margin-left", custmrg + "px")
 
         })
 
@@ -99,15 +133,6 @@ require 'conn.php';
                    i++
                 })  
 
-                // var itemEl = evt.item;  // dragged HTMLElement
-                // evt.to;    // target list
-                // evt.from;  // previous list
-                // evt.oldIndex;  // element's old index within old parent
-                // evt.newIndex;  // element's new index within new parent
-                // evt.oldDraggableIndex; // element's old index within old parent, only counting draggable elements
-                // evt.newDraggableIndex; // element's new index within new parent, only counting draggable elements
-                // evt.clone // the clone element
-                // evt.pullMode;  // when item is in another sortable: `"clone"` if cloning, `true` if moving
               }
           });
 
@@ -166,60 +191,100 @@ require 'conn.php';
 
           })
 
-          $('#torol').click(function(){
+          $('.delbutton').click(function(){
 
             $('.alert-dismissible').remove();
+            $('#deleteform').submit();
 
-            if ( $('#sel2').find(":selected").text() == "-- válasszon kategóriát --") {
+          })
 
-              $('#torloform').append(             
-              "<div class='alert alert-warning alert-dismissible show' role='alert'>" +
-              "<strong>Válasszon kategóriát!</strong>" +
-              "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>" +
-              "<span aria-hidden='true'>&times;</span>" +
-              "</button>" +
-              "</div>")
+          $('.delbutton').mouseenter(function(){
 
-            }
-
-            if ( $('#sel2').find(":selected").text() != "-- válasszon kategóriát --") {
-
-              $('#deleteform').submit();
-
-            }
-
+            $('input[name="delId"]').val($(this).attr('id'))
 
           })
 
           $('.deldiv').mouseenter(function(){
+                  
+            originalMrg = parseInt( $(this).css("margin-left").replace("px",""), 10)
+            $(this).addClass("reder")
+            recursive ( $(this), originalMrg )
 
-                      originalMrg = parseInt( $(this).css("margin-left").replace("px",""), 10)
-                      $(this).addClass("reder")
-                      recursive ( $(this), originalMrg )
-                      
-                      // if ( i != 0 ) {
-   
-                      //     actual = parseInt( $(this).css("margin-left").replace("px",""), 10)
-                      //     next = parseInt( $(this).next().css("margin-left").replace("px",""), 10)
-   
-                      //     if ( prev < actual) {                      
-                      //      $(this).css("margin-left", prev + 15 + "px")
-                      //    }
-                      // }
-                      // i++
           })  
 
           recursive = ( el ) => {
 
-               //actual = parseInt( el.css("margin-left").replace("px",""), 10)
-               marg = parseInt( el.next().css("margin-left").replace("px",""), 10)
-
+            if ( !(el.next().css("margin-left") === undefined) ) {
+              marg = parseInt( el.next().css("margin-left").replace("px",""), 10)
               if (marg > originalMrg) { 
                   el.next().addClass("reder")
                   recursive (el.next())
               }
+            }
 
           }
+
+          
+          recursive2 = ( k, el, orig ) => {
+
+            console.log ( k )
+            let b = k
+            
+            console.log ( " id : " + el.attr("id") +  " b  fent : " + b  )
+            if ( el.next().hasClass("sortdiv") ) {
+              
+                marg = parseInt( el.next().css("margin-left").replace("px",""), 10 )
+                
+                if ( marg > orig ) { 
+                    b = b + 1
+                    recursive2 (b, el.next(), orig )
+                }
+                               
+            } 
+            console.log ( " id : " + el.attr("id") +  " b  lent : " + b )
+            return b
+
+          }
+
+          // ChildrenNo = ( k, el ) => {
+          //         origMargin = parseInt(  el.css('margin-left').replace('px',"") )
+          //         if ( el.next().hasClass('sortdiv')  ) {
+                 
+          //          if( !( el.next().css('margin-left')  === undefined) )  {
+                    
+          //             if (  parseInt(  el.next().css('margin-left').replace('px',"") ) > origMargin ) {
+          //               k++    
+                                   
+          //               return ChildrenNo ( k, el.next() )
+          //             }
+          //           } 
+          //         }                  
+          //         return k 
+          //   }
+
+            ChildrenNo = ( k, el, origMargin ) => {
+                  // origMargin = parseInt(  el1.css('margin-left').replace('px',"") )
+                  if ( el.next().hasClass('sortdiv')  ) {
+                 
+                   if( !( el.next().css('margin-left')  === undefined) )  {
+                    
+                      if (  parseInt(  el.next().css('margin-left').replace('px',"") ) > origMargin ) {
+                        console.log(el.text())
+                        k++    
+                                   
+                        return ChildrenNo ( k, el.next(), origMargin )
+                      }
+                    } 
+                  }                  
+                  return k 
+            }
+
+         
+
+         
+
+
+
 
           $('.deldiv').mouseleave(function(){
 
@@ -227,6 +292,105 @@ require 'conn.php';
                      
           })  
 
+          $('#management').click(function(){
+           
+              let arr = []
+              let obj = {}
+              let lft = 0
+              let rgt = 0
+            
+              obj = {}
+  
+
+              $('.sortdiv').each( function(){
+
+                  origMargin = parseInt(  $(this).css('margin-left').replace('px',"") )
+                 
+                  let p = ChildrenNo( 0, $(this), origMargin  )
+
+                  $(this).attr('data-noofchilds',  p )
+                  
+                  id = $(this).attr('id')
+
+                  let noOfChildren = $(this).attr('data-noofchilds')
+
+                  let orig = parseInt( $(this).css("margin-left").replace("px",""), 10 )
+
+
+                  if( !($(this).prev().css("margin-left") === undefined) && $(this).prev().hasClass('sortdiv') ) {
+                     
+                      if( parseInt(  $(this).prev().css('margin-left').replace('px',"") ) <  orig  ) {
+                          lft++
+                          rgt = lft + noOfChildren * 2 + 1
+                      }
+                      if( parseInt(  $(this).prev().css('margin-left').replace('px',"") ) ==  orig ) {
+                          lft = lft + 2
+                          rgt = lft + noOfChildren * 2 + 1
+                      }
+                      if( parseInt(  $(this).prev().css('margin-left').replace('px',"") ) >  orig  ) {                        
+                          //  lft = lft + 1 + ( (parseInt(  $(this).css('margin-left').replace('px',"") ) - $(this).next().css('margin-left').replace('px',"")) / 15 )
+
+                          diff =  ((parseInt($(this).prev().css('margin-left').replace('px',"")) - parseInt($(this).css('margin-left').replace('px',""))) / 15)
+                          lft = lft + diff * 2 - ( diff - 2 )
+                          rgt = lft + noOfChildren * 2 + 1
+
+
+                          // switch ( diff ) {
+
+                          //       case 2:
+                          //           lft = lft + diff * 2
+                          //           rgt = lft + noOfChildren * 2 + 1
+                          //           break;
+                          //       case 3:
+                          //           lft = lft + diff * 2 - 1
+                          //           rgt = lft + noOfChildren * 2 + 1
+                          //           break;
+                          //       case 4:
+                          //           lft = lft + diff * 2 - 2
+                          //           rgt = lft + noOfChildren * 2 + 1
+                          //           break;    
+                          //   }
+                      
+                        }
+
+                      obj.lft = lft
+                      obj.rgt = rgt
+                      obj.id = id
+                      arr.push ( obj )
+                      obj = {}
+
+                  }
+                  else
+                  {
+
+                      lft = 1
+                      rgt = lft + noOfChildren * 2 + 1
+
+                      obj.lft = lft
+                      obj.rgt = rgt
+                      obj.id = id
+                      arr.push ( obj )
+                      obj = {}
+
+
+
+                  }
+
+                  // console.log ( "--------------------------"  )
+
+              })
+                  
+                  $('input[name="manageCat"]').val( JSON.stringify(arr) )
+                  
+                  
+                  console.log ( JSON.stringify(arr) )
+                 // console.log( f[0]['rgt'] ) 
+                  $('#manageform').submit()
+
+         
+          })
+      
+     
       })
 
 
@@ -276,18 +440,12 @@ require 'conn.php';
       }
 
       .hsub .submenu {
-
         display:none;
-       
-
       }
 
       .sidebar ul {
          list-style-type: none;
-          padding-left: 0px; 
-        
-
-         
+          padding-left: 0px;         
          }
 
          .sidebar ul li a {
@@ -298,47 +456,33 @@ require 'conn.php';
          
          }
          .sidebar ul li {
-         
-            background-color: rgba(238,241,243,0.56);
- 
-         
+            background-color: rgba(238,241,243,0.56);       
          }
-
-      
-
          .sidebar ul li a svg:first-of-type:not(.fa-caret-right){
             min-width: 30px 
             }
-
          .sidebar ul li ul li a {
-
             margin-left: 20px;
-
          }
          .sidebar ul li ul li {
 
-          border-top-width: 1px;
-          border-top-style: dotted;
-          border-top-color: rgba(197,200,202,0.56);
+            border-top-width: 1px;
+            border-top-style: dotted;
+            border-top-color: rgba(197,200,202,0.56);
 
           }
           .sidebar ul li ul li:first-child {
-
-          border:none;
-
+            border:none;
           }
 
-          .tab-content {
-
-              
+          .tab-content {           
               padding-bottom: 40px;
-
           }
 
           h3 {
 
-          font-family: 'Open Sans', sans-serif;
-          font-weight: 250;
+              font-family: 'Open Sans', sans-serif;
+              font-weight: 250;
 
           }
 
@@ -362,9 +506,7 @@ require 'conn.php';
             }
 
             .glyphicon-move {
-
                 font-size: 12px;
-
             }
 
             .reorder { 
@@ -394,22 +536,13 @@ require 'conn.php';
                 }
 
               .glyphicon-remove {
-
                 color: #c21313bf;
-
               }
 
               .reder { 
-
                   background-color: #f5b4b4;
                   transition: 1s;
-
               }
-
-
-           
-
-     
 
     </style>
     
@@ -938,7 +1071,7 @@ require 'conn.php';
                       <li role="presentation" class="active"><a href="#newcat" aria-controls="newcat" role="tab" data-toggle="tab">Új kategória</a></li>
                       <li role="presentation"><a href="#deletecat" aria-controls="deletecat" role="tab" data-toggle="tab">Kategória törlés</a></li>
                       <li role="presentation"><a href="#managecat" aria-controls="managecat" role="tab" data-toggle="tab">Kategória hierarchia beállítás</a></li>
-                      <li role="presentation"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a></li>
+                    
                     </ul>
 
                     <!-- Tab panes -->
@@ -1055,12 +1188,9 @@ require 'conn.php';
                                           
                                             <div class="form-group">
                                               <label for="sel2" style="margin-bottom:20px">Válasszon kategóriát:</label>
-                                              
-
+                                              <input type="hidden" id="delId" name="delId" value="">
                                               <?php 
                                               
-                                                  
-
                                                   $arr = [];
                                                   $query = "SELECT name, category_id, lft, rgt FROM `nested_category` WHERE `category_id` in (SELECT `category_id` FROM nested_category WHERE 1) ORDER BY lft;";
                                                   $result = $link->query($query);
@@ -1087,7 +1217,7 @@ require 'conn.php';
                                                   for ($x = 0; $x < count($json); $x++) {
                                       
                                                     $marg = (int)$json[ $x ][0] * 15;
-                                                    echo "<div class='deldiv' style='margin-top:5px;cursor: move;margin-left:" . $marg . "px'><i class='glyphicon glyphicon-move'></i>   ". $json[ $x ]['name'] ."<button type='button' class='btn btn-danger btn-xs' style='float:right; margin-right:5px'>Töröl</button></div>";
+                                                    echo "<div id='". $json[ $x ][ 'category_id' ] ."'class='deldiv' style='margin-top:5px;cursor: move;margin-left:" . $marg . "px'><i class='glyphicon glyphicon-move'></i>   ". $json[ $x ]['name'] ."<button id='". $json[ $x ]['category_id'] ."' type='button' class='btn btn-danger btn-xs delbutton' style='float:right; margin-right:5px'>Töröl</button></div>";
                                                       
                                                   }
                                                                                   
@@ -1110,16 +1240,16 @@ require 'conn.php';
 
                           <div style="border-left: 1px solid #d9d7d7;border-right: 1px solid #d9d7d7; border-bottom: 1px solid #d9d7d7;">
                                 <div class="row" style="padding-top:40px; padding-left:20px; padding-bottom: 40px" >
-                                    <div class="col-sm-5" id="torloform">   
+                                    <div class="col-sm-5" id="managediv">   
                                       
                                             <?php 
 
-                                                  if ( isset($_SESSION["deletesuccess"]) ) {
+                                                  if ( isset($_SESSION["managesuccess"]) ) {
 
-                                                    if ( $_SESSION["deletesuccess"]== "yes" ) {
+                                                    if ( $_SESSION["managesuccess"]== "yes" ) {
                                                       
                                                       echo '<div class="alert alert-success alert-dismissible show" role="alert">';
-                                                      echo '<strong>Sikeres kategória törlés!</strong>' ;
+                                                      echo '<strong>Sikeres kategória módosítás!</strong>' ;
                                                       echo '<button type="button" class="close" data-dismiss="alert" aria-label="Close">';
                                                       echo '<span aria-hidden="true">&times;</span>';
                                                       echo '</button>';
@@ -1127,7 +1257,7 @@ require 'conn.php';
 
                                                     }
 
-                                                    unset($_SESSION['deletesuccess']) ; 
+                                                    unset($_SESSION['managesuccess']) ; 
 
                                                   }                                    
                                             
@@ -1152,11 +1282,8 @@ require 'conn.php';
                                                   //echo $query2 . "<BR />";
 
                                                    $result2 = $link->query($query2);
-
                                                    $row1 = mysqli_fetch_assoc($result2);
-
                                                    array_push(  $row, $row1['depth'] );
-
                                                    array_push($arr,$row);
 
                                                 }
@@ -1164,40 +1291,35 @@ require 'conn.php';
                                                 $json = json_decode(json_encode($arr), true);
                                               
                                                 for ($x = 0; $x < count($json); $x++) {
-                                            
-                                                  $marg = (int)$json[ $x ][0] * 15;
-                                                  echo "<div class='sortdiv' style='margin-top:5px;cursor: move;margin-left:" . $marg . "px'><i class='glyphicon glyphicon-move'></i>   ". $json[ $x ]['name'] ."<span class='glyphicon glyphicon-circle-arrow-right reorder'></span><span class='glyphicon glyphicon-circle-arrow-left reorder'></span></div>";
-                                                    
+
+                                                    $query3 = "SELECT COUNT(node.name)-1 AS noofchilds FROM nested_category AS node, nested_category AS parent";
+                                                    $query3 = $query3 . " WHERE node.lft BETWEEN parent.lft AND parent.rgt AND node.rgt BETWEEN parent.lft AND parent.rgt AND parent.category_id=" . $json[ $x ]['category_id'] . ";";
+                                                    $result3 = $link->query( $query3 );  
+                                                    $row3 = mysqli_fetch_assoc( $result3 );
+
+                                              
+                                                    $marg = (int)$json[ $x ][0] * 15;
+                                                    echo "<div data-noofchilds=" . $row3['noofchilds'] . " id='". $json[ $x ]['category_id'] ."' class='sortdiv' style='margin-top:5px;cursor: move;margin-left:" . $marg . "px'><i class='glyphicon glyphicon-move'></i>   ". $json[ $x ]['name'] ."<span class='glyphicon glyphicon-circle-arrow-right reorder forth'></span><span class='glyphicon glyphicon-circle-arrow-left reorder back'></span></div>";
+                                                      
                                                 }
                                         
                                             ?>
                                             </div>
  
-                                            <form method="post" action="/deletecategory" id="deleteform">
-                                              
+                                            <form method="post" action="/managecategory" id="manageform">
+                                                <input type="hidden" id="manageCat" name="manageCat" value="">
                                                 <div class="form-group">
-                                                
-
                                                   <div style="margin-top:20px"> 
-                                                    <button type="button" id="torol" class="btn btn-primary">Ment</button>
+                                                    <button type="button" id="management" class="btn btn-primary">Ment</button>
                                                   </div>
                                                 </div> 
-
-                                              
-                                                  
+                                                 
                                             </form>
                                     </div>
                                 </div>
                               </div>
 
-
-
-
-
                           </div>
-
-                      <div role="tabpanel" class="tab-pane" id="settings">***</div>
-                
 
                     </div>
   
@@ -1206,8 +1328,6 @@ require 'conn.php';
               </div>
 
             </div>
-
-
 
           </div>
 
