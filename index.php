@@ -36,9 +36,6 @@ Flight::route('/insertnewcategory', function(){
                       if ($row['rgt'] > $temp ) { $temp = $row['rgt']; $usedNode = $row['name'];}
                 }
 
-                // fwrite($myfile, "\n". $usedNode);
-                // fwrite($myfile, "\n". $_POST['catName']);
-
                           $query1= "LOCK TABLE nested_category WRITE;";
                 $query1 = $query1. "SELECT @myRight := rgt FROM nested_category";
                 $query1 = $query1. " WHERE name = '" . $usedNode . "';";
@@ -77,12 +74,83 @@ Flight::route('/insertnewcategory', function(){
 
               } catch (Exception $e) {
                   $_SESSION["insertsuccess"]= "no";
-                  $myfile = fopen("-+-+-+.txt", "w") or die("Unable to open file!");
-                  $txt = "apad fasza7";
-                  fwrite($myfile, $txt);
-                  fclose($myfile);
               }          
          }
+       
+});
+
+Flight::route('/deletecategory', function(){
+  
+    include_once 'conn.php';
+    // $to_delete = ltrim($_POST['sel2'], 'g');
+    // $to_delete
+    // $to_delete = str_replace("›","",$_POST['sel2']);
+    // $to_delete = str_replace("› ","", $_POST['delId']);
+
+    // echo $to_delete;
+
+    $query= "LOCK TABLE nested_category WRITE;";
+    $query = $query. "SELECT @myLeft := lft, @myRight := rgt, @myWidth := rgt - lft + 1 FROM nested_category WHERE category_id = '". $_POST['delId'] ."';";
+    $query = $query. " DELETE FROM nested_category WHERE lft BETWEEN @myLeft AND @myRight;";
+    $query = $query. "UPDATE nested_category SET rgt = rgt - @myWidth WHERE rgt > @myRight;";
+    $query = $query. "UPDATE nested_category SET lft = lft - @myWidth WHERE lft > @myRight;";
+    $query = $query. "UNLOCK TABLES;";
+
+    $myFile = "-----.txt";
+        $fh = fopen($myFile, 'w') or die("can't open file");
+        $stringData = $query;
+        fwrite($fh, $stringData);
+
+    $resultDel = $link->multi_query($query);
+
+    if( $resultDel ) {
+
+        $_SESSION["deletesuccess"]= "yes";
+        Flight::redirect('/newCategory');
+
+    } 
+
+       
+});
+
+Flight::route('/managecategory', function(){
+  
+    include_once 'conn.php';
+    $json =  json_decode ($_POST['manageCat'], true)  ;
+
+    $query_update1 = "UPDATE nested_category SET lft = (case ";
+
+    for ( $i=0; $i < count($json); $i++)  {
+        $query_update1 =  $query_update1 . " when category_id = " . $json[$i]['id'] ." then " . $json[$i]['lft'];
+    }
+
+    $query_update1 = $query_update1 . " end);";
+
+
+    $query_update2 =  "UPDATE nested_category SET rgt = (case ";
+
+    for ( $i=0; $i < count($json); $i++)  {
+        $query_update2 =  $query_update2 . " when category_id = " . $json[$i]['id'] ." then " . $json[$i]['rgt'];
+    }
+
+    $query_update2 = $query_update2 . " end);";
+
+    $query_final= "LOCK TABLE nested_category WRITE;";
+    $query_final= $query_final . $query_update1;
+    $query_final= $query_final . $query_update2;
+    $query_final= $query_final . "UNLOCK TABLES;";
+
+    // echo $query_final;
+
+    $resultManage = $link->multi_query($query_final);
+
+    if( $resultManage ) {
+
+        $_SESSION["managesuccess"]= "yes";
+        Flight::redirect('/newCategory');
+
+    } 
+
        
 });
 
