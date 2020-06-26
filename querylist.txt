@@ -1,7 +1,0 @@
-LOCK TABLE nested_category WRITE;
-SELECT @myRight := rgt FROM nested_category WHERE name = 'FLASH';
-SELECT @myLeft := lft FROM nested_category WHERE name = 'FLASH';
-UPDATE nested_category SET rgt = rgt + 2 WHERE rgt >= @myRight;
-UPDATE nested_category SET lft = lft + 2 WHERE lft > @myLeft;
-INSERT INTO nested_category(name, lft, rgt) VALUES('dddddd', @myRight, @myRight + 1 );
-UNLOCK TABLES;
