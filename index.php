@@ -82,12 +82,6 @@ Flight::route('/insertnewcategory', function(){
 Flight::route('/deletecategory', function(){
   
     include_once 'conn.php';
-    // $to_delete = ltrim($_POST['sel2'], 'g');
-    // $to_delete
-    // $to_delete = str_replace("›","",$_POST['sel2']);
-    // $to_delete = str_replace("› ","", $_POST['delId']);
-
-    // echo $to_delete;
 
     $query= "LOCK TABLE nested_category WRITE;";
     $query = $query. "SELECT @myLeft := lft, @myRight := rgt, @myWidth := rgt - lft + 1 FROM nested_category WHERE category_id = '". $_POST['delId'] ."';";
@@ -95,11 +89,6 @@ Flight::route('/deletecategory', function(){
     $query = $query. "UPDATE nested_category SET rgt = rgt - @myWidth WHERE rgt > @myRight;";
     $query = $query. "UPDATE nested_category SET lft = lft - @myWidth WHERE lft > @myRight;";
     $query = $query. "UNLOCK TABLES;";
-
-    $myFile = "-----.txt";
-        $fh = fopen($myFile, 'w') or die("can't open file");
-        $stringData = $query;
-        fwrite($fh, $stringData);
 
     $resultDel = $link->multi_query($query);
 
