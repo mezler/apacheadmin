@@ -782,9 +782,9 @@ require 'conn.php';
                     </a>
                     </li>
                       <li class="">
-                    <a href="/products/import">
+                    <a href="/productimport">
                       <i class="menu-icon fa fa-caret-right"></i>
-                      <span class="menu-text"> Import </span>
+                      <span class="menu-text"> Termék import </span>
                     </a>
                     </li>
                       <li class="">
@@ -1239,7 +1239,12 @@ require 'conn.php';
                       <div role="tabpanel" class="tab-pane" id="managecat">
 
                           <div style="border-left: 1px solid #d9d7d7;border-right: 1px solid #d9d7d7; border-bottom: 1px solid #d9d7d7;">
-                                <div class="row" style="padding-top:40px; padding-left:20px; padding-bottom: 40px" >
+
+                          <div class="alert alert-warning" style="padding:5px;margin-top:15px;margin-left: 10px;margin-right: 60px">
+                                <strong>Fontos!</strong> Szülő kategória törlésénél a vonatkozó  alkategóriák mindegyike törlődik. A törlésre kerülő alkategóriákat halványpiros színnel kiemeljük,  </br> 
+                                amikor a "Töröl" gombra viszi az egérmutatót. A kitörölt kategóriákhoz tartozó termékek a megmaradó, közvetlen szülőkategóriába kerülnek át.
+                              </div>
+                                <div class="row" style="padding-top:20px; padding-left:20px; padding-bottom: 40px" >
                                     <div class="col-sm-5" id="managediv">   
                                       
                                             <?php 
