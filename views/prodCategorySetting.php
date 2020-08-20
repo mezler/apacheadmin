@@ -1,4 +1,25 @@
-<?php  
+<?php
+
+
+// if ($_SESSION["insertsuccess"]) 
+
+require 'conn.php';
+
+// $q = "SELECT * FROM Products";
+
+// $res = $link->query( $q );
+
+// $arr = [];
+
+// while( $row = mysqli_fetch_assoc( $res )) {
+
+//   array_push($arr, $row);
+
+// }
+
+// $json = json_encode( $arr );
+
+
 
 
 ?>
@@ -17,14 +38,68 @@
     
     <!-- Latest compiled and minified CSS & JS -->
     <link rel="stylesheet" media="screen" href="//netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-    <!-- <script src="//code.jquery.com/jquery.js"></script> -->
+    <script src="//code.jquery.com/jquery.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script src=https://cdn.staticfile.org/Sortable/1.10.2/Sortable.min.js></script>
+
+
+
+    <!-- BOOTSTRAP SELECT-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+
+    <!-- BOOTSTRAP SELECT-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+
+    <!-- ALERTIFY -->
+    <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
+    <!-- Default theme -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/default.min.css"/>
+    <!-- Semantic UI theme -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/semantic.min.css"/>
+    <!-- Bootstrap theme -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css"/>
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/nestable2@1.6.0/jquery.nestable.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nestable2@1.6.0/jquery.nestable.min.css"> -->
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.21/b-1.6.2/b-colvis-1.6.2/datatables.min.css"/> 
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.21/b-1.6.2/b-colvis-1.6.2/datatables.min.js"></script>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.35.4/js/bootstrap-dialog.min.js"></script>
+
+   
 
     <script>
+
+      function selectModal(content) {
+
+                let c = content
+
+                BootstrapDialog.show({
+                    message: c,
+                   
+                    buttons: [{
+                        icon: 'glyphicon glyphicon-send',
+                        label: 'Send ajax request',
+                        cssClass: 'btn-primary'                   
+                    }, {
+                        label: 'Close',
+                        action: function(dialogRef){
+                            dialogRef.close();
+                        }
+                    }]
+                });
+
+      }
 
       $('document').ready(function(){
 
 
+       
+         
           $('.menu_item').click(function(){
 
             if ($(this).parent().find('ul').css( "display") == 'none') { 
@@ -41,16 +116,127 @@
 
           })
 
-      })
+          $('#categoryTable').DataTable( {
+            //    data : data
+                ajax: {url: 'prodJson.php', dataSrc: ''},
+                columns: [
+                      { data: 'id' },
+                      { data: 'Name' },
+                      { data: 'LongName' },
+                      
+                      {
+                          data: 'id',
+                          render: function(data, type, row, meta) {
+                              return type === 'display' ?
+                                  //  '<div> <select style="border: none; background-color: #438eb9; color: white; width:70%"> <optgroup label="Picnic"> <option style="bckground-color: red">Mustard</option> <option>Ketchup</option> <option>Relish</option> </optgroup> <optgroup label="Camping"> <option>Tent</option> <option>Flashlight</option> <option>Toilet Paper</option> </optgroup> </select><button style="border: none; margin-left: 15px; background-color: #438eb9; color: white;"> Ment </button> </div>' :
+                                  '<div style="padding-left:40%"><button class="ide" style="border: none; margin-left: 15px; background-color: #438eb9; color: white;"> Választ </button><button style="border: none; margin-left: 15px; background-color: #438eb9; color: white;"> Ment </button></div>' :
+                                  data;
+                          }
+                      }
+                    ],
+                  drawCallback: function( ) {
+
+                      let cont = ""
+
+                      $('.ide').on('click', function(){
+
+                        fetch('https://adminapache.ddev.site/scripts/jsonFeed.php')
+                        .then(resp => resp.json())
+                        .then(json => renderContent(json));
+
+                      })
+                     
+                  }
+            });
+
+
+          function renderContent(json) {
+
+              let st = ""
+              let prev = 2
+
+              json.forEach( item => {
+                
+                if ( item[0] == 0 ) {                
+                  return true 
+                }
+
+                if ( item[0] > prev ) {
+                  d = "<div class='nodegroup'><div class='child'>" + `<p>${item.name} <span> ${item[0]} </span> </p>` + "</div>"
+                }
+
+                if ( item[0] == prev ) {
+                  d = "<div class='child'>" + `<p>${item.name} <span> ${item[0]} </span> </p>` + "</div>"
+                }
+
+                if ( item[0] < prev ) {
+                  d = "</div><div class='parent'>" + `<p>${item.name} <span> ${item[0]} </span> </p>` + "</div>"
+                }
+
+                prev = item[0] 
 
 
 
+                // if ( item[0] == 1 ) {
+                //   d = "<div class='parent'>" + `<p>${item.name} <span> ${item[0]} </span> </p>` + "</div>"
+                // } else {
+                //   d = "<div class='child'>" + `<p>${item.name} <span> ${item[0]} </span> </p>` + "</div>"
+                // }
+                 st = st + d
+                 console.log ( st )
+                 console.log ( "----------------------" )
 
 
+              })
+
+              selectModal(st)
+
+              $(document).off('click').on('click','.parent',function(evt){
+
+                $(this).next('div').toggle('medium')
+                
+              })
+
+           
+              
+
+          }
+
+          // function callback (){
+
+          //   $( ".parent" ).on( "click", function() {
+          //     alert ( "fuikolkiuz" )
+          //   });
+
+          // } 
+
+
+
+      });
+         
 
     </script>
 
     <style>
+
+
+      .child {
+
+        
+
+      }
+
+      .parent {
+
+
+
+      }
+
+      .nodegroup {
+
+          display: none;
+
+      }
 
       .navbar-header svg {
 
@@ -94,18 +280,12 @@
       }
 
       .hsub .submenu {
-
         display:none;
-       
-
       }
 
       .sidebar ul {
          list-style-type: none;
-          padding-left: 0px; 
-        
-
-         
+          padding-left: 0px;         
          }
 
          .sidebar ul li a {
@@ -116,37 +296,153 @@
          
          }
          .sidebar ul li {
-         
-            background-color: rgba(238,241,243,0.56);
- 
-         
+            background-color: rgba(238,241,243,0.56);       
          }
-
-      
-
          .sidebar ul li a svg:first-of-type:not(.fa-caret-right){
             min-width: 30px 
             }
-
          .sidebar ul li ul li a {
-
             margin-left: 20px;
-
          }
          .sidebar ul li ul li {
 
-          border-top-width: 1px;
-          border-top-style: dotted;
-          border-top-color: rgba(197,200,202,0.56);
+            border-top-width: 1px;
+            border-top-style: dotted;
+            border-top-color: rgba(197,200,202,0.56);
 
           }
           .sidebar ul li ul li:first-child {
+            border:none;
+          }
 
-          border:none;
+          .tab-content {           
+              padding-bottom: 40px;
+          }
+
+          h3 {
+
+              font-family: 'Open Sans', sans-serif;
+              font-weight: 250;
 
           }
 
-     
+          .nav-tabs li.active a {
+
+              background-color: #f6f7f8 !important;
+              border-radius: 0 0 0 0;
+              border-bottom-color: #ddd;
+
+          }
+          
+          .nav-tabs li a {
+
+            /* background-color: #f6f7f8 !important; */
+            border-radius: 0 0 0 0;
+            border-bottom-color: #ddd;
+            border-top-color: #ddd;
+            border-right-color: #ddd;
+            border-left-color: #ddd;
+
+            }
+
+            .glyphicon-move {
+                font-size: 12px;
+            }
+
+            .reorder { 
+
+              float:right;
+              margin-right: 5px;
+              color: #438eb9;
+              margin-top: 2px;
+              cursor: pointer;
+              
+              }
+
+              .sortdiv {
+
+                padding-top: 5px;
+                padding-bottom: 5px;
+                padding-left:4px;
+                background-color: #8f939536;
+              }
+
+              .deldiv {
+
+                padding-top: 5px;
+                padding-bottom: 5px;
+                padding-left:4px;
+                background-color: #8f939536;
+                }
+
+              .glyphicon-remove {
+                color: #c21313bf;
+              }
+
+              .reder { 
+                  background-color: #f5b4b4;
+                  transition: 1s;
+              }
+
+
+
+              /* SELECT */
+
+              /* .theme-pink {
+  --radius: 2em;
+  --baseFg: #c70062;
+  --baseBg: #ffe3f1;
+  --accentFg: #c70062;
+  --accentBg: #ffaad4;
+}
+
+.theme-construction {
+  --radius: 0;
+  --baseFg: white;
+  --baseBg: black;
+  --accentFg: black;
+  --accentBg: orange;
+}
+
+select {
+  font: 400 12px/1.3 sans-serif;
+  -webkit-appearance: none;
+  appearance: none;
+  color: var(--baseFg);
+  border: 1px solid var(--baseFg);
+  line-height: 1;
+  outline: 0;
+  padding: 0.65em 2.5em 0.55em 0.75em;
+  border-radius: var(--radius);
+  background-color: var(--baseBg);
+  background-image: linear-gradient(var(--baseFg), var(--baseFg)),
+    linear-gradient(-135deg, transparent 50%, var(--accentBg) 50%),
+    linear-gradient(-225deg, transparent 50%, var(--accentBg) 50%),
+    linear-gradient(var(--accentBg) 42%, var(--accentFg) 42%);
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat;
+  background-size: 1px 100%, 20px 22px, 20px 22px, 20px 100%;
+  background-position: right 20px center, right bottom, right bottom, right bottom;   
+}
+
+select:hover {
+  background-image: linear-gradient(var(--accentFg), var(--accentFg)),
+    linear-gradient(-135deg, transparent 50%, var(--accentFg) 50%),
+    linear-gradient(-225deg, transparent 50%, var(--accentFg) 50%),
+    linear-gradient(var(--accentFg) 42%, var(--accentBg) 42%);
+}
+
+select:active {
+  background-image: linear-gradient(var(--accentFg), var(--accentFg)),
+    linear-gradient(-135deg, transparent 50%, var(--accentFg) 50%),
+    linear-gradient(-225deg, transparent 50%, var(--accentFg) 50%),
+    linear-gradient(var(--accentFg) 42%, var(--accentBg) 42%);
+  color: var(--accentBg);
+  border-color: var(--accentFg);
+  background-color: var(--accentFg);
+} */
+
+
+               /* SELECT END */
 
     </style>
     
@@ -362,9 +658,9 @@
                     <b class="arrow"></b>
                     <ul class="submenu">
                       <li class="">
-                    <a href="/prodCategorySetting">
+                    <a href="/products">
                       <i class="menu-icon fa fa-caret-right"></i>
-                      <span class="menu-text"> Kategória beállítás </span>
+                      <span class="menu-text"> Products </span>
                     </a>
                     </li>
                       <li class="">
@@ -386,9 +682,9 @@
                     </a>
                     </li>
                       <li class="">
-                    <a href="/products/import">
+                    <a href="/productimport">
                       <i class="menu-icon fa fa-caret-right"></i>
-                      <span class="menu-text"> Import </span>
+                      <span class="menu-text"> Termék import </span>
                     </a>
                     </li>
                       <li class="">
@@ -402,7 +698,7 @@
                   </li>
               
                   <li class="">
-                    <a href="/categories">
+                    <a href="categories.php">
                       <i class="menu-icon fa fa-folder"></i>
                       <span class="menu-text"> Product Categories </span>
                     </a>
@@ -491,9 +787,7 @@
                       <span class="menu-text"> Sales Reps </span>
                     </a>
                     </li>
-              
-              
-              
+                           
                   <li class="hsub">
                     <a class="dropdown-toggle menu_item" href="#">
                       <i class="menu-icon fa fa-line-chart"></i>
@@ -665,13 +959,45 @@
 
               <div class="col-sm-10">
 
+                  <div class="page-header" style="padding-bottom: 0; margin:0; color:#448abf">
+                      <h3>Termék kategóriák</h3>
+                  </div> 
 
+               
+                  <div style="margin-top: 30px;padding-left:50px;padding-right: 50px">
+                      <table id="categoryTable" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th style="width:10%; background-color: #d1d2d3f2">id</th>
+                                    <th style="width:20%; background-color: #d1d2d3f2">Name</th>
+                                    <th style="width:40%; background-color: #d1d2d3f2">Longname</th>
+                                    <th style="width:55%; background-color: #d1d2d3f2"></th>
+                                </tr>
+                            </thead>
+                        </table>
+                  </div>
+                  
+              
+                  
 
               </div>
+
+            </div>
 
           </div>
 
         </div>
+
+        <script>
+
+            // let node = document.getElementById("ide")
+            // node.addEventListener('click', selectModal)  
+
+            
+
+
+
+        </script>
 
 
     

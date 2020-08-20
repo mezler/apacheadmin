@@ -38,7 +38,7 @@ require 'conn.php';
     <!-- Bootstrap theme -->
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css"/>
 
-    <link rel="stylesheet" href="css/jquery.filer.css">
+    <link rel="stylesheet" href="/css/jquery.filer.css">
     <link rel="stylesheet" href="/css/jquery.filer-dragdropbox-theme.css">
     <script src="/js/jquery.filer.min.js"></script>
 

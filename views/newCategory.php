@@ -1084,13 +1084,26 @@ require 'conn.php';
                                 <div class="col-sm-4" id="insertform">   
 
                                         <?php 
-
+											  
                                               if ( isset($_SESSION["insertsuccess"]) ) {
+                                                
+//                                                 echo 	$_SESSION["insertsuccess"];
 
-                                                if ( $_SESSION["insertsuccess"]== "yes" ) {
+                                                if ( $_SESSION["insertsuccess"] == "yes" ) {
                                                   
                                                   echo '<div class="alert alert-success alert-dismissible show" role="alert">';
                                                   echo '<strong>Sikeres kategória inzert!</strong>' ;
+                                                  echo '<button type="button" class="close" data-dismiss="alert" aria-label="Close">';
+                                                  echo '<span aria-hidden="true">&times;</span>';
+                                                  echo '</button>';
+                                                  echo '</div>';
+
+                                                }
+                                                
+                                                if ( $_SESSION["insertsuccess"] == "no" ) {
+                                                  
+                                                  echo '<div class="alert alert-danger alert-dismissible show" role="alert">';
+                                                  echo '<strong>Nem sikerült a kategóriát létrehozni!</strong>' ;
                                                   echo '<button type="button" class="close" data-dismiss="alert" aria-label="Close">';
                                                   echo '<span aria-hidden="true">&times;</span>';
                                                   echo '</button>';

@@ -22,6 +22,14 @@ Flight::route('/newcategory', function(){
     Flight::render('newCategory.php');
 });
 
+Flight::route('/setcategory', function(){
+    Flight::render('setCategory.php');
+});
+
+Flight::route('/prodCategorySetting', function(){
+    Flight::render('prodCategorySetting.php');
+});
+
 
 Flight::route('/insertnewcategory', function(){
   
@@ -42,49 +50,124 @@ Flight::route('/insertnewcategory', function(){
                 while ($row = mysqli_fetch_assoc($result)) {
                       if ($row['rgt'] > $temp ) { $temp = $row['rgt']; $usedNode = $row['name'];}
                 }
+                                              
+                $query1 = "LOCK TABLE nested_category WRITE;";
+                $query2 = "SELECT @myRight := rgt FROM nested_category WHERE name = '" . $usedNode . "';";
+                $query3 = "UPDATE nested_category SET rgt = rgt + 2 WHERE rgt > @myRight;";
+                $query4 = "UPDATE nested_category SET lft = lft + 2 WHERE lft > @myRight;";
+                $query5 = "INSERT INTO nested_category(name, lft, rgt) VALUES('".$_POST['catName']."', @myRight + 1, @myRight + 2);";
+                $query6 = "UNLOCK TABLES;";
+                
+                unset($_SESSION['insertsuccess']);
+                mysqli_begin_transaction($link);
+				 
+				$link->query($query1);
+                
+				if( !$link->query($query2) ) {
 
-                          $query1= "LOCK TABLE nested_category WRITE;";
-                $query1 = $query1. "SELECT @myRight := rgt FROM nested_category";
-                $query1 = $query1. " WHERE name = '" . $usedNode . "';";
-                $query1 = $query1. "UPDATE nested_category SET rgt = rgt + 2 WHERE rgt > @myRight;";
-                $query1 = $query1. "UPDATE nested_category SET lft = lft + 2 WHERE lft > @myRight;";
-                $query1 = $query1. "INSERT INTO nested_category(name, lft, rgt) VALUES('".$_POST['catName']."', @myRight + 1, @myRight + 2);";
-                $query1 = $query1. "UNLOCK TABLES;";
-
-                $result1 = $link->multi_query($query1);
-
-                if( $result1 ) {
-
-                  $_SESSION["insertsuccess"]= "yes";
-                  Flight::redirect('/newCategory');
-
+				  $_SESSION["insertsuccess"] = "no";
+                                 
                 } 
                 
-        }        
+                if( !$link->query($query3) ) {
 
-        if ( mysqli_num_rows($result) == 0 ) {    
-
-          $query2 = "LOCK TABLE nested_category WRITE;";
-          $query2 = $query2."SELECT @myRight := rgt FROM nested_category WHERE name = '" . $parent . "';";
-          $query2 = $query2."SELECT @myLeft := lft FROM nested_category WHERE name = '" . $parent . "';";
-          $query2 = $query2."UPDATE nested_category SET rgt = rgt + 2 WHERE rgt >= @myRight;";
-          $query2 = $query2."UPDATE nested_category SET lft = lft + 2 WHERE lft > @myLeft;";
-          $query2 = $query2."INSERT INTO nested_category(name, lft, rgt) VALUES('" . $_POST['catName'] . "', @myRight, @myRight + 1 );";
-          $query2 = $query2."UNLOCK TABLES;";
+				  $_SESSION["insertsuccess"] = "no";
+                  
+                } 
                 
-          try {
-                  $con = mysqli_connect($config['host'],$config['dbuser'],$config['dbpass'],$config['db']);
-                  $result2 = $link->multi_query($query2);
+                if( !$link->query($query4) ) {
 
-                  $_SESSION["insertsuccess"]= "yes";
-                  Flight::redirect('/newCategory');
+				  $_SESSION["insertsuccess"] = "no";
+                  
+                } 
+                
+                if( !$link->query($query5) ) {
+                
+				  $_SESSION["insertsuccess"] = "no";
+                  
+                }   
+                
+                if (  isset( $_SESSION["insertsuccess"] ) ) {
 
-              } catch (Exception $e) {
-                  $_SESSION["insertsuccess"]= "no";
-              }          
-         }
+                    mysqli_rollback($link);
+                    Flight::redirect('/newCategory');
+                  
+                } else {
+
+                    $_SESSION["insertsuccess"] = "yes";
+                    $link->query($query6);
+                    mysqli_commit($link);
+                    Flight::redirect('/newCategory');
+
+                }
+
+        } 
+
+
+    if ( mysqli_num_rows($result) == 0 ) {    
+
+          $query1 = "LOCK TABLE nested_category WRITE;";
+          $query2 = "SELECT @myRight := rgt FROM nested_category WHERE name = '" . $parent . "';";
+          $query3 = "SELECT @myLeft := lft FROM nested_category WHERE name = '" . $parent . "';";
+          $query4 = "UPDATE nested_category SET rgt = rgt + 2 WHERE rgt >= @myRight;";
+          $query5 = "UPDATE nested_category SET lft = lft + 2 WHERE lft > @myLeft;";
+          $query6 = "INSERT INTO nested_category(name, lft, rgt) VALUES('" . $_POST['catName'] . "', @myRight, @myRight + 1 );";
+          $query7 = "UNLOCK TABLES;";
+          
+          unset($_SESSION['insertsuccess']);
+          mysqli_begin_transaction($link);
+          
+          $link->query($query1);
+                
+			if( !$link->query($query2) ) {
+
+			  $_SESSION["insertsuccess"] = "no";
+						 
+			} 
+		
+			if( !$link->query($query3) ) {
+
+			  $_SESSION["insertsuccess"] = "no";
+		  
+			} 
+		
+			if( !$link->query($query4) ) {
+
+			  $_SESSION["insertsuccess"] = "no";
+		  
+			} 
+		
+			if( !$link->query($query5) ) {
+		
+			  $_SESSION["insertsuccess"] = "no";
+		  
+			} 
+			
+			if( !$link->query($query6) ) {
+		
+			  $_SESSION["insertsuccess"] = "no";
+		  
+            } 
+
+            if (  isset( $_SESSION["insertsuccess"] ) ) {
+
+                mysqli_rollback($link);
+                Flight::redirect('/newCategory');
+              
+            } else {
+
+                $_SESSION["insertsuccess"] = "yes";
+                $link->query($query7);
+                mysqli_commit($link);
+                Flight::redirect('/newCategory');
+
+            }
+
+                  
+        }
        
 });
+
 
 Flight::route('/deletecategory', function(){
   
