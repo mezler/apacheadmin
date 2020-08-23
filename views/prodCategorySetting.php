@@ -74,12 +74,15 @@ require 'conn.php';
 
     <script>
 
-      const selectModal =  (content) =>  {
+      const selectModal =  (content, prodId, prod) =>  {
 
                BootstrapDialog.show({
                     message: content,
                     title: '<i class="fa fa-list" aria-hidden="true"></i> Válassza ki a kategóriát!',
-                    
+                    data: {
+                        'prodId': prodId,
+                        'prod': prod
+                    },                   
                     onshown: function(){
 
                       // $('.modal-content').css({ 'display': 'none'})
@@ -145,30 +148,67 @@ require 'conn.php';
                             
                           }) 
 
+                          $('.termekLabel').html( `<p style='text-align:center;padding-top:4px;color:#3379b7'>${prod}</p>` )
+
                           // $('.modal-content').css({ 'display': 'block'})
 
                     },
                     buttons: [{
                         // icon: 'glyphicon glyphicon-send',
                         label: 'Kiválaszt / ment',
-                        cssClass: 'btn-primary'                   
-                    }, {
+                        cssClass: 'btn-primary',
+                        action: function(dialogRef){
+                          let choosenCat = dialogRef.getModalBody().find('.choosen').attr('id')
+                          let prodId = dialogRef.getData('prodId')
+                          fetch('/scripts/changeCat.php', {
+                              method: 'POST',
+                              headers: {'Content-Type':'application/x-www-form-urlencoded'}, 
+                              body: `choosenCat=${choosenCat}&prodId=${prodId}`
+                          }).then(res=>res.text()).then(res => alert(res))
+                        }                    
+                    }, 
+                    {
+                        // icon: 'glyphicon glyphicon-send',
+                        label: 'Következő',
+                        cssClass: 'btn-primary',
+                        action: function(dialogRef){
+
+                          //dialogRef.getModalBody().find('.choosen').nextS
+
+                          // var indexes = catTable.rows().eq( 0 ).filter( function (rowIdx) {
+                          //     alert( catTable.cell( rowIdx, 0 ).data() === 7 ? true : false ) 
+                          // })
+
+
+                          $('td').each(function(){
+
+                              if ( $(this).text() == dialogRef.getData('prodId')) { 
+                                 dialogRef.setData( 'prodId', $(this).parent().next('tr').find('td:eq(0)').html() ) 
+                                 dialogRef.setData('prod', $(this).parent().next('tr').find('td:eq(1)').html() )
+                                 dialogRef.getModalBody().find('.termekLabel > p').html(dialogRef.getData('prod'))
+                                 return false   
+                              }
+
+                          })
+                          
+                        }                    
+                    }, 
+                    
+                    
+                    
+                    
+                    {
                         label: 'Bezár',
                         action: function(dialogRef){
-                            dialogRef.close();
+                             dialogRef.close();
                         }
                     }]
                 });
 
-            
-
       }
 
       $('document').ready(function(){
-
-
-       
-         
+      
           $('.menu_item').click(function(){
 
             if ($(this).parent().find('ul').css( "display") == 'none') { 
@@ -185,19 +225,19 @@ require 'conn.php';
 
           })
 
-          $('#categoryTable').DataTable( {
+          let catTable = $('#categoryTable').DataTable( {
             //    data : data
                 ajax: {url: 'prodJson.php', dataSrc: ''},
                 columns: [
                       { data: 'id' },
                       { data: 'Name' },
                       { data: 'LongName' },
-                      { data: 'name' },
+                      { data: '0' },
                       {
                           data: 'id',
                           render: function(data, type, row, meta) {
                               return type === 'display' ?
-                                  '<div style="padding-left:40%"><button class="ide" style="border: none; margin-left: 15px; background-color: #438eb9; color: white;"> Választ </button><button style="border: none; margin-left: 15px; background-color: #438eb9; color: white;"> Ment </button></div>' :
+                                  '<div style="padding-left:5%"><button class="ide" style="border: none; margin-left: 15px; background-color: #438eb9; color: white;"> Választ </button><button style="border: none; margin-left: 15px; background-color: #438eb9; color: white;"> Ment </button></div>' :
                                   data;
                           }
                       }
@@ -206,11 +246,11 @@ require 'conn.php';
 
                       let cont = ""
 
-                      $('.ide').on('click', function(){
+                      $('.ide').off('click').on('click', function(){
 
                         fetch('https://adminapache.ddev.site/scripts/jsonFeed.php')
                         .then(resp => resp.json())
-                        .then(json => renderContent(json))
+                        .then(json => renderContent( json, $(this).parent().parent().parent().children('td:first-child').text(), $(this).parent().parent().parent().children('td:eq(1)').text() ))
                         
                       })
                      
@@ -218,9 +258,9 @@ require 'conn.php';
             });
 
 
-          function renderContent(json) {
+          function renderContent( json, prodId, prod ) {
 
-              let st = ""
+              let st = "<div class='termekLabel'></div>"
               let prev = 2
 
               let last = json.pop()
@@ -248,22 +288,6 @@ require 'conn.php';
                   d = "</div><div class='parent shifted' >" + `<p style="padding-left: 15px"><i class='fa fa-plus fa-xs' aria-hidden='true'></i>  ${item.name}</p>` + "</div>"
                 }
 
-                // if ( (item[0] == 2 && prev == 3)  ) {
-                //   d = "</div></div>".concat(d)
-                // }
-
-
-
-
-
-                // if ( item[0] == 2 && prev == 3 ) {
-                //   d = "</div><div class='parent'>" + `<p><i class='fa fa-plus fa-xs' aria-hidden='true'></i>  ${item.name}</p>` + "</div>"
-                // }
-
-
-
-
-
                 if ( item.category_id == last.category_id && item[0] == 3 && prev == 3 ) {
                   d = d.concat("</div></div>")
                 }
@@ -273,10 +297,11 @@ require 'conn.php';
          
               })
 
-              console.log ( st )
-              selectModal(st)
-       
+              // st = ("<div class='termekLabel'></div>").concat(st)
 
+              console.log ( st )
+              selectModal( st, prodId, prod )
+  
           }
 
       });
@@ -285,6 +310,27 @@ require 'conn.php';
     </script>
 
     <style>
+
+
+      .dataTable tbody tr {
+
+          height: 10px;
+
+      }
+
+      .termekLabel {
+
+          width: 60%;
+          height: 30px;
+          /* background-color: red; */
+          border: 1px dotted blue;
+          margin-left:auto;
+          margin-right:auto;
+          margin-top: 10px;
+          margin-bottom: 10px;
+
+
+      }
 
 
       /* .child.choosen { background-color: black;} */
@@ -1012,11 +1058,11 @@ require 'conn.php';
                       <table id="categoryTable" style="width:100%">
                             <thead>
                                 <tr>
-                                    <th style="width:5%; background-color: #d1d2d3f2">id</th>
-                                    <th style="width:10%; background-color: #d1d2d3f2">Name</th>
+                                    <th style="width:15%; background-color: #d1d2d3f2">id</th>
+                                    <th style="width:15%; background-color: #d1d2d3f2">Name</th>
                                     <th style="width:35%; background-color: #d1d2d3f2">Longname</th>
                                     <th style="width:20%; background-color: #d1d2d3f2">Kategória</th>
-                                    <th style="width:30%; background-color: #d1d2d3f2"></th>
+                                    <th style="width:25%; background-color: #d1d2d3f2"></th>
                                 </tr>
                             </thead>
                         </table>
