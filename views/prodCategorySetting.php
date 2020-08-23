@@ -74,24 +74,93 @@ require 'conn.php';
 
     <script>
 
-      function selectModal(content) {
+      const selectModal =  (content) =>  {
 
-                let c = content
+               BootstrapDialog.show({
+                    message: content,
+                    title: '<i class="fa fa-list" aria-hidden="true"></i> Válassza ki a kategóriát!',
+                    
+                    onshown: function(){
 
-                BootstrapDialog.show({
-                    message: c,
-                   
+                      // $('.modal-content').css({ 'display': 'none'})
+                         
+                          $('.modal-header').css({'background-color' : '#337ab7', 'color' : 'white'})
+                          
+                          $('.child').each( function() {
+                           
+                            if( $(this).next('div').hasClass('nodegroup') ) {
+                            
+                                $(this).removeClass('child').addClass('parent')
+                              
+                                let txt =  $(this).find('p').text()
+
+                                $(this).find('p').html(`<i class='fa fa-plus fa-xs' aria-hidden='true'></i>     ${txt}`)
+                                
+                                $(this).find('p').css({"padding-left" : "15px"})
+
+                                $(this).addClass('shifted')
+                              
+                            }
+                          })
+
+                          $('.parent').each( function() {
+                           
+                              $(this).css({'width': '50%', 'background-color': '#3379b7', 'color': 'white', 'padding-left': '10px', 'cursor': 'pointer', 'margin-left' : 'auto', 'margin-right' : 'auto', 'margin-bottom' : '-9px' })
+                              
+                              if( $(this).hasClass('shifted') ) {
+
+                                    $(this).next('.nodegroup').css({"padding-left" : "50px"})
+
+                              }
+
+                          })
+
+                          $('.nodegroup').each( function() {
+                                                      
+                              if( $(this).parent().hasClass('nodegroup') ) {
+
+                                    $(this).removeClass('nodegroup')
+                                    $(this).addClass('nodegroup_2nd')
+                                    $(this).parent().css({'width': '100%'})
+                                 
+                              }
+                          })
+
+                          $('.nodegroup_2nd').each( function() {                                                     
+                              $(this).css({'padding-left': '0px'})
+                          })
+
+                          $(document).off('click').on('click','.parent',function(evt){
+                              $(this).next('div').slideToggle('medium')
+                          }) 
+
+                          $('.child').off('click').on('click', function(){
+
+                              //  $('.bootstrap-dialog-message > div').removeClass('choosen')  
+                               $('.child').css({'background-color' : 'white'})  
+                               $('*').removeClass('choosen') 
+                               $(this).addClass('choosen')
+
+                               $(this).css({'background-color' : '#c59292f7'})  
+                            
+                          }) 
+
+                          // $('.modal-content').css({ 'display': 'block'})
+
+                    },
                     buttons: [{
-                        icon: 'glyphicon glyphicon-send',
-                        label: 'Send ajax request',
+                        // icon: 'glyphicon glyphicon-send',
+                        label: 'Kiválaszt / ment',
                         cssClass: 'btn-primary'                   
                     }, {
-                        label: 'Close',
+                        label: 'Bezár',
                         action: function(dialogRef){
                             dialogRef.close();
                         }
                     }]
                 });
+
+            
 
       }
 
@@ -123,12 +192,11 @@ require 'conn.php';
                       { data: 'id' },
                       { data: 'Name' },
                       { data: 'LongName' },
-                      
+                      { data: 'name' },
                       {
                           data: 'id',
                           render: function(data, type, row, meta) {
                               return type === 'display' ?
-                                  //  '<div> <select style="border: none; background-color: #438eb9; color: white; width:70%"> <optgroup label="Picnic"> <option style="bckground-color: red">Mustard</option> <option>Ketchup</option> <option>Relish</option> </optgroup> <optgroup label="Camping"> <option>Tent</option> <option>Flashlight</option> <option>Toilet Paper</option> </optgroup> </select><button style="border: none; margin-left: 15px; background-color: #438eb9; color: white;"> Ment </button> </div>' :
                                   '<div style="padding-left:40%"><button class="ide" style="border: none; margin-left: 15px; background-color: #438eb9; color: white;"> Választ </button><button style="border: none; margin-left: 15px; background-color: #438eb9; color: white;"> Ment </button></div>' :
                                   data;
                           }
@@ -142,8 +210,8 @@ require 'conn.php';
 
                         fetch('https://adminapache.ddev.site/scripts/jsonFeed.php')
                         .then(resp => resp.json())
-                        .then(json => renderContent(json));
-
+                        .then(json => renderContent(json))
+                        
                       })
                      
                   }
@@ -155,6 +223,9 @@ require 'conn.php';
               let st = ""
               let prev = 2
 
+              let last = json.pop()
+              json.push(last)
+
               json.forEach( item => {
                 
                 if ( item[0] == 0 ) {                
@@ -162,55 +233,51 @@ require 'conn.php';
                 }
 
                 if ( item[0] > prev ) {
-                  d = "<div class='nodegroup'><div class='child'>" + `<p>${item.name} <span> ${item[0]} </span> </p>` + "</div>"
+                  d = `<div class='nodegroup' ><div class='child' id=${item.category_id}>` + `<p><i class='fa fa-caret-right fa-xs' aria-hidden='true'></i>  ${item.name}</p>` + "</div>"
                 }
 
                 if ( item[0] == prev ) {
-                  d = "<div class='child'>" + `<p>${item.name} <span> ${item[0]} </span> </p>` + "</div>"
+                  d = `<div class='child' id=${item.category_id}>` + `<p><i class='fa fa-caret-right fa-xs' aria-hidden='true'></i>  ${item.name}</p>` + "</div>"
                 }
 
-                if ( item[0] < prev ) {
-                  d = "</div><div class='parent'>" + `<p>${item.name} <span> ${item[0]} </span> </p>` + "</div>"
+                if ( item[0] < prev && item[0] == 1 ) {
+                  d = "</div><div class='parent'>" + `<p><i class='fa fa-plus fa-xs' aria-hidden='true'></i>  ${item.name}</p>` + "</div>"
+                }
+
+                if ( item[0] < prev && item[0] == 2 ) {
+                  d = "</div><div class='parent shifted' >" + `<p style="padding-left: 15px"><i class='fa fa-plus fa-xs' aria-hidden='true'></i>  ${item.name}</p>` + "</div>"
+                }
+
+                // if ( (item[0] == 2 && prev == 3)  ) {
+                //   d = "</div></div>".concat(d)
+                // }
+
+
+
+
+
+                // if ( item[0] == 2 && prev == 3 ) {
+                //   d = "</div><div class='parent'>" + `<p><i class='fa fa-plus fa-xs' aria-hidden='true'></i>  ${item.name}</p>` + "</div>"
+                // }
+
+
+
+
+
+                if ( item.category_id == last.category_id && item[0] == 3 && prev == 3 ) {
+                  d = d.concat("</div></div>")
                 }
 
                 prev = item[0] 
-
-
-
-                // if ( item[0] == 1 ) {
-                //   d = "<div class='parent'>" + `<p>${item.name} <span> ${item[0]} </span> </p>` + "</div>"
-                // } else {
-                //   d = "<div class='child'>" + `<p>${item.name} <span> ${item[0]} </span> </p>` + "</div>"
-                // }
-                 st = st + d
-                 console.log ( st )
-                 console.log ( "----------------------" )
-
-
+                st = st + d
+         
               })
 
+              console.log ( st )
               selectModal(st)
-
-              $(document).off('click').on('click','.parent',function(evt){
-
-                $(this).next('div').toggle('medium')
-                
-              })
-
-           
-              
+       
 
           }
-
-          // function callback (){
-
-          //   $( ".parent" ).on( "click", function() {
-          //     alert ( "fuikolkiuz" )
-          //   });
-
-          // } 
-
-
 
       });
          
@@ -220,33 +287,69 @@ require 'conn.php';
     <style>
 
 
-      .child {
-
-        
-
-      }
-
-      .parent {
-
-
-
-      }
+      /* .child.choosen { background-color: black;} */
 
       .nodegroup {
 
+          width : 50%; 
+          margin-left: auto;
+          margin-right: auto; 
           display: none;
 
       }
 
-      .navbar-header svg {
+      .nodegroup_2nd {
 
-        color:#fff;
+          width : 50%;
+          padding-left:0px;
+          margin-left: auto;
+          margin-right: auto; 
+          display: none;
 
       }
 
-      .navbar .navbar-default {
+      .nodegroup > .child {
 
-        
+          padding-left:20px;
+          margin-bottom: -9px;
+          cursor: pointer;
+          /* background-color: #91afc0;
+          color: #ffffff; */
+          border-left: 3px solid #337ab7;
+
+      }
+
+      .nodegroup_2nd > .child {
+
+          padding-left:20px;
+          margin-bottom: -9px;
+          cursor: pointer;
+          /* background-color: #91afc0;
+          color: #ffffff; */
+          border-left: 3px solid #337ab7;
+
+      }
+
+      .child:hover { 
+
+          background-color: #91afc0;
+          color: black;
+
+      }
+
+      .nodegroup_2nd > .child:hover {
+
+          background-color: #91afc0;
+          color: black;
+
+      }
+
+     
+
+      .navbar-header svg {
+
+          color:#fff;
+
       }
 
       .a1 li {  display: inline-block; line-height: 2;}
@@ -384,65 +487,6 @@ require 'conn.php';
                   transition: 1s;
               }
 
-
-
-              /* SELECT */
-
-              /* .theme-pink {
-  --radius: 2em;
-  --baseFg: #c70062;
-  --baseBg: #ffe3f1;
-  --accentFg: #c70062;
-  --accentBg: #ffaad4;
-}
-
-.theme-construction {
-  --radius: 0;
-  --baseFg: white;
-  --baseBg: black;
-  --accentFg: black;
-  --accentBg: orange;
-}
-
-select {
-  font: 400 12px/1.3 sans-serif;
-  -webkit-appearance: none;
-  appearance: none;
-  color: var(--baseFg);
-  border: 1px solid var(--baseFg);
-  line-height: 1;
-  outline: 0;
-  padding: 0.65em 2.5em 0.55em 0.75em;
-  border-radius: var(--radius);
-  background-color: var(--baseBg);
-  background-image: linear-gradient(var(--baseFg), var(--baseFg)),
-    linear-gradient(-135deg, transparent 50%, var(--accentBg) 50%),
-    linear-gradient(-225deg, transparent 50%, var(--accentBg) 50%),
-    linear-gradient(var(--accentBg) 42%, var(--accentFg) 42%);
-  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat;
-  background-size: 1px 100%, 20px 22px, 20px 22px, 20px 100%;
-  background-position: right 20px center, right bottom, right bottom, right bottom;   
-}
-
-select:hover {
-  background-image: linear-gradient(var(--accentFg), var(--accentFg)),
-    linear-gradient(-135deg, transparent 50%, var(--accentFg) 50%),
-    linear-gradient(-225deg, transparent 50%, var(--accentFg) 50%),
-    linear-gradient(var(--accentFg) 42%, var(--accentBg) 42%);
-}
-
-select:active {
-  background-image: linear-gradient(var(--accentFg), var(--accentFg)),
-    linear-gradient(-135deg, transparent 50%, var(--accentFg) 50%),
-    linear-gradient(-225deg, transparent 50%, var(--accentFg) 50%),
-    linear-gradient(var(--accentFg) 42%, var(--accentBg) 42%);
-  color: var(--accentBg);
-  border-color: var(--accentFg);
-  background-color: var(--accentFg);
-} */
-
-
-               /* SELECT END */
 
     </style>
     
@@ -968,10 +1012,11 @@ select:active {
                       <table id="categoryTable" style="width:100%">
                             <thead>
                                 <tr>
-                                    <th style="width:10%; background-color: #d1d2d3f2">id</th>
-                                    <th style="width:20%; background-color: #d1d2d3f2">Name</th>
-                                    <th style="width:40%; background-color: #d1d2d3f2">Longname</th>
-                                    <th style="width:55%; background-color: #d1d2d3f2"></th>
+                                    <th style="width:5%; background-color: #d1d2d3f2">id</th>
+                                    <th style="width:10%; background-color: #d1d2d3f2">Name</th>
+                                    <th style="width:35%; background-color: #d1d2d3f2">Longname</th>
+                                    <th style="width:20%; background-color: #d1d2d3f2">Kategória</th>
+                                    <th style="width:30%; background-color: #d1d2d3f2"></th>
                                 </tr>
                             </thead>
                         </table>
